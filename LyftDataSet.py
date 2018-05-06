@@ -65,13 +65,26 @@ class LyftDataSet(object):
         new_image[:,:,2] = cv2.equalizeHist(b)
 
         return new_image
+    
+    def subMean(self,image):
+        
+        img = image.copy().astype(np.float32)
+        img[:,:,0] -= 103.939
+        img[:,:,1] -= 116.779
+        img[:,:,2] -= 123.68
+        
+        return img
 
     def setXy(self):
+        
         image_ops = lambda x:cv2.imread(x)
         segs_ops = lambda x:cv2.imread(x)[:,:,2] # bgr --> r:2 channel
         norm_ops = lambda x:self.normalized(x)
+        subMean_ops = lambda x:self.subMean(x)
 
         ims = list( map( norm_ops, list(map( image_ops, self.image_files)   ) ) )
+        ims = list( map( subMean_ops, ims ) )
+
         segs = list( map(  segs_ops, self.seg_files ))
 
         return np.array(ims), np.array(segs)

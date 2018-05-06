@@ -10,10 +10,16 @@ from sklearn.utils import shuffle
 # user defined ..
 from LyftDataSet import LyftDataSet
 
+#
+# special approach to just select Vehicle(10) and Roads(7)
+# 
+# output layer shoudl be l x h x w x 3
+#
+
 class LyftDataGenerator(keras.utils.Sequence):
 
     'Generates data for Keras'
-    def __init__(self, mode="train", batch_size=32, shuffle_flag=True):
+    def __init__(self, mode="train", batch_size=32, n_classes = 3 ) :
         
         # Initialization
         lytfdataSet = LyftDataSet()
@@ -36,10 +42,13 @@ class LyftDataGenerator(keras.utils.Sequence):
         self.n_channels = c
         
         self.batch_size = batch_size
-        self.n_classes = lytfdataSet.n_classes
+        self.n_classes = n_classes
         
         print("batch_size", batch_size)
         print("number of labels", self.n_classes)
+
+    def on_epoch_end(self):
+        self.X, self.y = shuffle(self.X, self.y)
 
     def __len__(self):
         return math.ceil(len(self.X) / self.batch_size)
@@ -67,24 +76,45 @@ class LyftDataGenerator(keras.utils.Sequence):
         # for debug new_labels shape
         #print(new_labels.shape)
 
+        # new_labels[:,:,0] None
+        # new_labels[:,:,1] Roads
+        # new_labels[:,:,2] Vehicles 
+
         for i in range(l):
-            for j in range(self.n_classes):
+            for idx, j in enumerate( [0,7,10] ):
                 
                 bins = np.zeros_like( labels[i])
                 bins[ labels[i] == j ] = 1
-                new_labels[i,:,:,j] = bins
+
+                new_labels[i,:,:,idx] = bins
+
+            label_front = new_labels[i,:490,:,2].copy()
+            label_hood = new_labels[i,490:,:,2].copy()
+            label_hood[label_hood == 1] = 0
+            new_labels[i,:,:,2] = np.vstack( [label_front, label_hood] )
         
         return new_labels
 
 def main():
 
     dg = LyftDataGenerator(batch_size=16)
+
+    X, y = dg.__getitem__(1)
+    print(X.shape, y.shape)
+
+    
     
     # test to display segmentation 
     #y = dg.y[0]
-    #plt.imshow(y)
-    #plt.show()
+    y = y[0].reshape(600,800,3)
+    # Roads
+    plt.imshow(y[:,:,1])
+    plt.show()
 
+    # Vehicles
+    plt.imshow(y[:,:,2])
+    plt.show()
+    
 
 if __name__ == "__main__":
     main()

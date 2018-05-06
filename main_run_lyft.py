@@ -25,7 +25,11 @@ from LyftDataGenerator import LyftDataGenerator
 def build_model():
 
     input_shape=(600, 800, 3) 
-    classes=13
+    #classes=13
+
+    # Roads, Vehicles and Others
+    classes=3
+
 
     segNet = SegNet()
     model = segNet.build_model(input_shape, classes)
