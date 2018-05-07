@@ -29,6 +29,7 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
 from keras.models import load_model
 
+import keras.losses
 
 ### IOU or dice coeff calculation
 
@@ -140,6 +141,8 @@ def main():
 
     if os.path.isfile(model_file):
         print("model file found", model_file)
+        keras.losses.custom_loss = IOU_calc_loss
+
         model = load_model(model_file)
     else:
         model.compile(optimizer=Adam(lr=1e-4), 
