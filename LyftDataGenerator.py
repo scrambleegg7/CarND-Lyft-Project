@@ -106,7 +106,7 @@ def main():
     
     # test to display segmentation 
     #y = dg.y[0]
-    y = y[0].reshape(600,800,3)
+    y = y[0].reshape(360,480,3)
     # Roads
     plt.imshow(y[:,:,1])
     plt.show()

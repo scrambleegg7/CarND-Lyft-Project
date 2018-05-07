@@ -24,8 +24,9 @@ from LyftDataGenerator import LyftDataGenerator
 
 def build_model():
 
-    input_shape=(600, 800, 3) 
+    #input_shape=(600, 800, 3) 
     #classes=13
+    input_shape=(360, 480, 3)
 
     # Roads, Vehicles and Others
     classes=3
