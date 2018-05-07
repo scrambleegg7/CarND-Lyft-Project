@@ -27,6 +27,8 @@ from keras.layers import Input, merge, Convolution2D, MaxPooling2D, UpSampling2D
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
+from keras.models import load_model
+
 
 ### IOU or dice coeff calculation
 
@@ -125,7 +127,7 @@ def main():
     print("- confirmed generator offset / batch size working well to get the dataset....")
     offset = 0
     BATCH_SIZE = 4
-    EPOCHS = 1
+    EPOCHS = 20
 
     print("- "* 30)
 
@@ -134,8 +136,13 @@ def main():
     train_generator = generator(dataSet,BATCH_SIZE,mode="train")
     validation_generator = generator(dataSet,BATCH_SIZE,mode="test")
 
+    model_file = os.path.join("save_models","unet_model.h5")
 
-    model.compile(optimizer=Adam(lr=1e-4), 
+    if os.path.isfile(model_file):
+        print("model file found", model_file)
+        model = load_model(model_file)
+    else:
+        model.compile(optimizer=Adam(lr=1e-4), 
                 loss=IOU_calc_loss, metrics=[IOU_calc])
 
     #model.compile(optimizer=optimizer, loss='mse')
