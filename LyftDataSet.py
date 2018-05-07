@@ -47,11 +47,13 @@ class LyftDataSet(object):
         self.image_files = glob.glob( os.path.join( self.train_data_rgb, "*.png" ) )
         self.seg_files = glob.glob( os.path.join( self.trainannot_data, "*.png" )  )
 
-        self.Xtrain_files , self.Xtest_files, self.ytrain_files, self.ytest_files = train_test_split(self.image_files, self.seg_files , test_size = 0.4)         
+        self.Xtrain_files , self.Xtest_files, self.ytrain_files, self.ytest_files = train_test_split(self.image_files, self.seg_files , test_size = 0.15)         
         print("loading done ... train test sizes : ", len(self.Xtrain_files), len(self.Xtest_files))
 
         self.train_num_samples = len(self.Xtrain_files)
         self.test_num_samples = len(self.Xtest_files)
+
+        self.n_classes = 3
 
         #self.read_label_tag()
     
@@ -61,7 +63,7 @@ class LyftDataSet(object):
     #
     # batch next is called with generator
     #
-    def batch_next(self,offset,BATCH_SIZE=32, mode="train"):
+    def batch_next(self,offset,BATCH_SIZE=32, mode="train", unet=False):
 
         # get filenames by BATCH SIZE
         if mode == "train":
@@ -73,7 +75,7 @@ class LyftDataSet(object):
             
         #print(len( image_samples ), len( label_samples ))    
         images = self.preprocess_image(image_samples)
-        labels = self.preprocess_label(label_samples)
+        labels = self.preprocess_label(label_samples,unet)
 
         #print(images.shape)
         #print(labels.shape)
@@ -117,18 +119,24 @@ class LyftDataSet(object):
 
         return np.array(ims)
 
-    def preprocess_label(self, seg_files):
+    def preprocess_label(self, seg_files, unet=False):
 
         # file read with original image size
         segs_ops = lambda x:  cv2.imread(x)[:,:,2] # bgr --> r:2 channel
         segs = list( map(  segs_ops, seg_files ))
 
         # for Vehicles 
-        segs = self.one_hot_labels_unet( np.array( segs ),label=10)
-        
-        # change shape to fit keras output model ( None, h, w, c)
-        l,h,w = segs.shape
-        segs = np.reshape( segs, (l,h,w,1))
+
+        if unet:
+            segs = self.one_hot_labels_unet( np.array( segs ),label=10)
+            # change shape to fit keras output model ( None, h, w, c)
+            l,h,w = segs.shape
+            segs = np.reshape( segs, (l,h,w,1))
+        else:
+            segs = self.one_hot_labels( np.array( segs ))
+            l,h,w,c = segs.shape
+            segs = np.reshape( segs, (l,h * w, c))
+            
 
         return np.array( segs )
 

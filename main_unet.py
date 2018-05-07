@@ -137,16 +137,14 @@ def main():
     train_generator = generator(dataSet,BATCH_SIZE,mode="train")
     validation_generator = generator(dataSet,BATCH_SIZE,mode="test")
 
-    model_file = os.path.join("save_models","unet_model.h5")
+    model_file = os.path.join("save_models","unet_weights.h5")
+    model.compile(optimizer=Adam(lr=1e-4), 
+                loss=IOU_calc_loss, metrics=[IOU_calc])
 
     if os.path.isfile(model_file):
-        print("model file found", model_file)
-        keras.losses.custom_loss = IOU_calc_loss
+        print("** weights file found ....", model_file)
 
-        model = load_model(model_file)
-    else:
-        model.compile(optimizer=Adam(lr=1e-4), 
-                loss=IOU_calc_loss, metrics=[IOU_calc])
+    model.load_weights(model_file)
 
     #model.compile(optimizer=optimizer, loss='mse')
     #model.compile(loss="categorical_crossentropy", optimizer='adadelta', metrics=["accuracy"])
@@ -159,8 +157,8 @@ def main():
         validation_steps= valid_steps  , epochs=EPOCHS, verbose=1)
     
 
-    model_file = os.path.join("save_models","unet_model.h5")
-    model.save(model_file)
+    model_file = os.path.join("save_models","unet_weights.h5")
+    model.save_weights(model_file)
 
 
 
