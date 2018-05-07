@@ -90,8 +90,8 @@ def main():
     
     history_object = model.fit_generator(train_generator,  steps_per_epoch=steps_per_epch, \
         validation_data=validation_generator, validation_steps= valid_steps,  \
-        use_multiprocessing=True, workers=4 , epochs=EPOCHS, verbose=1)
-        #epochs=EPOCHS, verbose=1)
+        epochs=EPOCHS, verbose=1)
+        #use_multiprocessing=True, workers=4 , epochs=EPOCHS, verbose=1)
         
 
     model.save_weights(model_file)
